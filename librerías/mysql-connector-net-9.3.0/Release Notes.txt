@@ -1,0 +1,9 @@
+Connector/NET 9.3 Release Notes
+------------------------------------
+Welcome to the release notes for Connector/NET 9.1
+
+What's new in 9.3
+--------------------
+
+Connector/NET now supports the newest version of EFCore 8 and EFCore 9.
+Connector/NET added fixes to testsuite.
