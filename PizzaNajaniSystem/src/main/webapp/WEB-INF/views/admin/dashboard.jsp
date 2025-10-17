@@ -571,7 +571,7 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
-            const contextPath = '${pageContext.request.contextPath}';
+                        const contextPath = '${pageContext.request.contextPath}';
         </script>
 
         <script src="${pageContext.request.contextPath}/assets/admin/js/dashboard.js"></script>
