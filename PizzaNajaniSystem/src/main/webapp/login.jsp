@@ -12,7 +12,7 @@
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/theme.css">
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/general/css/theme.css">
     </head>
     <body>
         <div class="login-container">
@@ -78,27 +78,7 @@
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        <script>
-            document.getElementById('loginForm').addEventListener('submit', function (e) {
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value;
+           <script src="${pageContext.request.contextPath}/assets/general/js/login.js"></script>
 
-                if (!username || !password) {
-                    e.preventDefault();
-                    alert('Por favor, complete todos los campos');
-                    return false;
-                }
-
-                const btnLogin = document.getElementById('btnLogin');
-                const btnText = document.getElementById('btnText');
-
-                btnLogin.disabled = true;
-                btnText.innerHTML = '<span class="spinner"></span>Iniciando sesión...';
-            });
-
-            window.addEventListener('load', function () {
-                document.getElementById('username').focus();
-            });
-        </script>
     </body>
 </html>

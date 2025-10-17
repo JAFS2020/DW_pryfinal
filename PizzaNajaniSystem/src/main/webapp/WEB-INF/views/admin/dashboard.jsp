@@ -8,113 +8,16 @@
         <title>Dashboard - Administrador | Pizzería Najani</title>
 
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/css/dashboard.css">
 
-        <style>
-            .badge {
-                padding: 6px 12px;
-                border-radius: 12px;
-                font-size: 0.85rem;
-                font-weight: 500;
-            }
-
-            .badge-success {
-                background: #E8F5E9 !important;
-                color: #2E7D32 !important;
-            }
-
-            .badge-danger {
-                background: #FFEBEE !important;
-                color: #C62828 !important;
-            }
-
-            .bg-primary {
-                background: #E3F2FD !important;
-                color: #1565C0 !important;
-            }
-
-            .btn {
-                padding: 6px 12px;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                margin: 0 2px;
-            }
-
-            .btn-sm {
-                padding: 4px 8px;
-                font-size: 0.875rem;
-            }
-
-            .btn-info {
-                background: #0288D1;
-                color: white;
-            }
-
-            .btn-info:hover {
-                background: #01579B;
-                transform: translateY(-2px);
-            }
-
-            .btn-warning {
-                background: #FFA000;
-                color: white;
-            }
-
-            .btn-warning:hover {
-                background: #F57C00;
-                transform: translateY(-2px);
-            }
-
-            .btn-danger {
-                background: #D32F2F;
-                color: white;
-            }
-
-            .btn-danger:hover {
-                background: #B71C1C;
-                transform: translateY(-2px);
-            }
-
-            .btn-success {
-                background: #388E3C;
-                color: white;
-            }
-
-            .btn-success:hover {
-                background: #2E7D32;
-                transform: translateY(-2px);
-            }
-
-            .btn-secondary {
-                background: #757575;
-                color: white;
-            }
-
-            .btn-secondary:hover {
-                background: #616161;
-                transform: translateY(-2px);
-            }
-
-            .fa-spinner.fa-spin {
-                animation: fa-spin 1s infinite linear;
-            }
-
-            @keyframes fa-spin {
-                0% {
-                    transform: rotate(0deg);
-                }
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
-        </style>
+        <link rel="stylesheet" href="${pageContext.request.contextPath}/assets/admin/css/dashboard.css">
     </head>
     <body>
 
-        <aside class="sidebar">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
                     <i class="fas fa-pizza-slice"></i>
@@ -170,6 +73,9 @@
 
             <header class="top-header">
                 <div class="header-left">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <h1>Bienvenido, ${sessionScope.fullName}</h1>
                 </div>
 
@@ -186,7 +92,8 @@
 
                     <form action="${pageContext.request.contextPath}/logout" method="POST" style="margin: 0;">
                         <button type="submit" class="btn-logout">
-                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Cerrar Sesión</span>
                         </button>
                     </form>
                 </div>
@@ -280,7 +187,7 @@
                 <div id="productos-section" class="content-section">
                     <div class="section-header">
                         <h2>Gestión de Productos</h2>
-                        <button class="btn-primary">
+                        <button class="btn-primary" onclick="openCreateProductModal()">
                             <i class="fas fa-plus"></i> Nuevo Producto
                         </button>
                     </div>
@@ -293,14 +200,14 @@
                                     <th>Producto</th>
                                     <th>Categoría</th>
                                     <th>Precio</th>
-                                    <th>Stock</th>
+                                    <th>Tiempo Prep.</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="productsTableBody">
                                 <tr>
-                                    <td colspan="7" class="text-center">Función de productos próximamente...</td>
+                                    <td colspan="7" class="text-center">Cargando productos...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -310,12 +217,12 @@
                 <div id="categorias-section" class="content-section">
                     <div class="section-header">
                         <h2>Gestión de Categorías</h2>
-                        <button class="btn-primary">
+                        <button class="btn-primary" onclick="openCreateCategoryModal()">
                             <i class="fas fa-plus"></i> Nueva Categoría
                         </button>
                     </div>
-                    <div class="table-container">
-                        <p class="text-center text-muted">Función próximamente...</p>
+                    <div class="table-container" id="categoriesContainer">
+                        <p class="text-center text-muted">Cargando categorías...</p>
                     </div>
                 </div>
 
@@ -323,8 +230,8 @@
                     <div class="section-header">
                         <h2>Control de Inventario</h2>
                     </div>
-                    <div class="table-container">
-                        <p class="text-center text-muted">Función próximamente...</p>
+                    <div class="table-container" id="inventoryContainer">
+                        <p class="text-center text-muted">Cargando inventario...</p>
                     </div>
                 </div>
 
@@ -349,187 +256,324 @@
             </main>
         </div>
 
+        <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="userModalTitle">Nuevo Usuario</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="userForm">
+                            <input type="hidden" id="userId" name="userId">
+                            <input type="hidden" id="userAction" name="userAction" value="create">
+
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuario <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">Nombre Completo <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="fullName" name="fullName" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Teléfono</label>
+                                <input type="text" class="form-control" id="phone" name="phone">
+                            </div>
+
+                            <div class="mb-3" id="passwordField">
+                                <label for="password" class="form-label">Contraseña <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password">
+                                <small class="text-muted">Mínimo 6 caracteres</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="roleId" class="form-label">Rol <span class="text-danger">*</span></label>
+                                <select class="form-select" id="roleId" name="roleId" required>
+                                    <option value="">Seleccione un rol</option>
+                                    <option value="1">Administrador</option>
+                                    <option value="2">Vendedor</option>
+                                    <option value="3">Cocinero</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="saveUser()">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="productModalTitle">Nuevo Producto</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="productForm">
+                            <input type="hidden" id="productId" name="productId">
+                            <input type="hidden" id="productAction" name="action" value="create">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="productCode" class="form-label">Código</label>
+                                    <input type="text" class="form-control" id="productCode" name="productCode" placeholder="PIZ001">
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="categoryIdProduct" class="form-label">Categoría <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="categoryIdProduct" name="categoryId" required>
+                                        <option value="">Cargando categorías...</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="productName" class="form-label">Nombre del Producto <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="productName" name="productName" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="price" class="form-label">Precio (S/.) <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="cost" class="form-label">Costo (S/.)</label>
+                                    <input type="number" class="form-control" id="cost" name="cost" step="0.01" min="0">
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="preparationTime" class="form-label">Tiempo Prep. (min)</label>
+                                    <input type="number" class="form-control" id="preparationTime" name="preparationTime" value="15" min="1">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="imageUrl" class="form-label">URL de Imagen</label>
+                                <input type="text" class="form-control" id="imageUrl" name="imageUrl" placeholder="https://...">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="saveProduct()">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="categoryModalTitle">Nueva Categoría</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="categoryForm">
+                            <input type="hidden" id="categoryIdHidden" name="categoryId">
+                            <input type="hidden" id="categoryAction" name="action" value="create">
+
+                            <div class="mb-3">
+                                <label for="categoryName" class="form-label">Nombre de la Categoría <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="categoryName" name="categoryName" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="categoryDescription" class="form-label">Descripción</label>
+                                <textarea class="form-control" id="categoryDescription" name="description" rows="3"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="saveCategory()">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title">
+                            <i class="fas fa-exclamation-triangle"></i> Confirmación
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmMessage"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="confirmButton">
+                            <i class="fas fa-check"></i> Confirmar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="inventoryModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-box"></i> Reabastecer Inventario
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="inventoryForm">
+                            <input type="hidden" id="inventoryProductId" name="productId">
+
+                            <div class="mb-3">
+                                <label class="form-label">Producto</label>
+                                <input type="text" class="form-control" id="inventoryProductName" readonly>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Stock Actual</label>
+                                    <input type="number" class="form-control" id="currentStockDisplay" readonly>
+                                </div>
+
+                                <div class="col-6 mb-3">
+                                    <label class="form-label">Stock Mínimo</label>
+                                    <input type="number" class="form-control" id="minStockDisplay" readonly>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="restockQuantity" class="form-label">
+                                    Cantidad a Agregar <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" class="form-control" id="restockQuantity" name="quantity" min="1" required>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Nuevo stock: <strong><span id="newStockPreview">0</span></strong>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" onclick="saveRestock()">
+                            <i class="fas fa-check"></i> Reabastecer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editInventoryModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">
+                            <i class="fas fa-edit"></i> Editar Inventario
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editInventoryForm">
+                            <input type="hidden" id="editInventoryId" name="inventoryId">
+
+                            <div class="mb-3">
+                                <label class="form-label">Producto</label>
+                                <input type="text" class="form-control" id="editProductName" readonly>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="editCurrentStock" class="form-label">
+                                    Stock Actual <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" class="form-control" id="editCurrentStock" name="currentStock" min="0" required>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <label for="editMinStock" class="form-label">
+                                        Stock Mínimo <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="editMinStock" name="minStock" min="0" required>
+                                </div>
+
+                                <div class="col-6 mb-3">
+                                    <label for="editMaxStock" class="form-label">
+                                        Stock Máximo <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control" id="editMaxStock" name="maxStock" min="0" required>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-primary" onclick="saveInventoryEdit()">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="custom-alert-modal" id="customAlertModal">
+            <div class="custom-alert-content">
+                <div class="custom-alert-header">
+                    <div class="custom-alert-icon" id="alertIcon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="custom-alert-text">
+                        <h3 id="alertTitle">Éxito</h3>
+                        <p id="alertSubtitle">Operación completada</p>
+                    </div>
+                </div>
+                <div class="custom-alert-body">
+                    <p class="custom-alert-message" id="alertMessage">
+                        La operación se realizó correctamente.
+                    </p>
+                </div>
+                <div class="custom-alert-footer">
+                    <button class="custom-alert-btn success" id="alertButton" onclick="closeCustomAlert()">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
-                            const contextPath = '${pageContext.request.contextPath}';
-
-                            document.querySelectorAll('.menu-item').forEach(item => {
-                                item.addEventListener('click', function (e) {
-                                    e.preventDefault();
-
-                                    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                                    document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-
-                                    this.classList.add('active');
-                                    const section = this.getAttribute('data-section');
-                                    document.getElementById(section + '-section').classList.add('active');
-
-                                    if (section === 'usuarios') {
-                                        loadUsers();
-                                    } else if (section === 'productos') {
-                                        loadProducts();
-                                    }
-                                });
-                            });
-
-                            function loadUsers() {
-                                const tbody = document.getElementById('usersTableBody');
-                                tbody.innerHTML = '<tr><td colspan="7" class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando usuarios...</td></tr>';
-
-                                fetch(contextPath + '/admin/users?action=listAll')
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            if (data.success) {
-                                                displayUsers(data.data);
-                                            } else {
-                                                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error: ' + data.message + '</td></tr>';
-                                            }
-                                        })
-                                        .catch(error => {
-                                            console.error('Error:', error);
-                                            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar usuarios</td></tr>';
-                                        });
-                            }
-
-                            function displayUsers(users) {
-                                const tbody = document.getElementById('usersTableBody');
-
-                                if (users.length === 0) {
-                                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">No hay usuarios registrados</td></tr>';
-                                    return;
-                                }
-
-                                let html = '';
-                                users.forEach(user => {
-                                    const roleName = user.roles && user.roles.length > 0 ? user.roles[0].roleName : 'Sin rol';
-                                    const statusBadge = user.isActive
-                                            ? '<span class="badge badge-success">Activo</span>'
-                                            : '<span class="badge badge-danger">Inactivo</span>';
-
-                                    html += '<tr>';
-                                    html += '<td>' + user.userId + '</td>';
-                                    html += '<td><strong>' + user.username + '</strong></td>';
-                                    html += '<td>' + user.fullName + '</td>';
-                                    html += '<td>' + user.email + '</td>';
-                                    html += '<td><span class="badge bg-primary">' + roleName + '</span></td>';
-                                    html += '<td>' + statusBadge + '</td>';
-                                    html += '<td>';
-                                    html += '<button class="btn btn-sm btn-info" onclick="viewUser(' + user.userId + ')" title="Ver">';
-                                    html += '<i class="fas fa-eye"></i>';
-                                    html += '</button>';
-                                    html += '<button class="btn btn-sm btn-warning" onclick="editUser(' + user.userId + ')" title="Editar">';
-                                    html += '<i class="fas fa-edit"></i>';
-                                    html += '</button>';
-                                    html += '<button class="btn btn-sm btn-' + (user.isActive ? 'secondary' : 'success') + '" ';
-                                    html += 'onclick="toggleUserStatus(' + user.userId + ', ' + !user.isActive + ')" ';
-                                    html += 'title="' + (user.isActive ? 'Desactivar' : 'Activar') + '">';
-                                    html += '<i class="fas fa-' + (user.isActive ? 'ban' : 'check') + '"></i>';
-                                    html += '</button>';
-                                    if (user.userId !== 1) {
-                                        html += '<button class="btn btn-sm btn-danger" onclick="deleteUser(' + user.userId + ')" title="Eliminar">';
-                                        html += '<i class="fas fa-trash"></i>';
-                                        html += '</button>';
-                                    }
-                                    html += '</td>';
-                                    html += '</tr>';
-                                });
-
-                                tbody.innerHTML = html;
-                            }
-
-                            function viewUser(userId) {
-                                fetch(contextPath + '/admin/users?action=findById&id=' + userId)
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            if (data.success) {
-                                                const user = data.data;
-                                                let message = 'INFORMACIÓN DEL USUARIO\n\n';
-                                                message += 'Usuario: ' + user.username + '\n';
-                                                message += 'Nombre: ' + user.fullName + '\n';
-                                                message += 'Email: ' + user.email + '\n';
-                                                message += 'Teléfono: ' + (user.phone || 'No registrado') + '\n';
-                                                message += 'Estado: ' + (user.isActive ? 'Activo' : 'Inactivo');
-                                                alert(message);
-                                            } else {
-                                                alert('Error: ' + data.message);
-                                            }
-                                        })
-                                        .catch(error => {
-                                            console.error('Error:', error);
-                                            alert('Error al cargar el usuario');
-                                        });
-                            }
-
-                            function editUser(userId) {
-                                alert('Función de editar próximamente. ID: ' + userId);
-                            }
-
-                            function toggleUserStatus(userId, newStatus) {
-                                if (!confirm('¿Está seguro de cambiar el estado del usuario?')) {
-                                    return;
-                                }
-
-                                const formData = new FormData();
-                                formData.append('action', 'updateStatus');
-                                formData.append('userId', userId);
-                                formData.append('isActive', newStatus);
-
-                                fetch(contextPath + '/admin/users', {
-                                    method: 'POST',
-                                    body: formData
-                                })
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            if (data.success) {
-                                                alert(data.message);
-                                                loadUsers();
-                                            } else {
-                                                alert('Error: ' + data.message);
-                                            }
-                                        })
-                                        .catch(error => {
-                                            console.error('Error:', error);
-                                            alert('Error al cambiar el estado');
-                                        });
-                            }
-
-                            function deleteUser(userId) {
-                                if (!confirm('¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.')) {
-                                    return;
-                                }
-
-                                const formData = new FormData();
-                                formData.append('action', 'delete');
-                                formData.append('userId', userId);
-
-                                fetch(contextPath + '/admin/users', {
-                                    method: 'POST',
-                                    body: formData
-                                })
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            if (data.success) {
-                                                alert(data.message);
-                                                loadUsers();
-                                            } else {
-                                                alert('Error: ' + data.message);
-                                            }
-                                        })
-                                        .catch(error => {
-                                            console.error('Error:', error);
-                                            alert('Error al eliminar el usuario');
-                                        });
-                            }
-
-                            function openCreateUserModal() {
-                                alert('Modal de crear usuario próximamente...');
-                            }
-
-
-                            function loadProducts() {
-                                console.log('Cargar productos...');
-                            }
+            const contextPath = '${pageContext.request.contextPath}';
         </script>
+
+        <script src="${pageContext.request.contextPath}/assets/admin/js/dashboard.js"></script>
     </body>
 </html>
